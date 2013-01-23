@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "AOSP Resource Browser",
-  "version": "0.1",
+  "name": "Android Resource Navigator for GitHub",
+  "description": "Enhanced web based resource navigation for Android projects",
+  "version": "0.1.0",
   "background": { "scripts": ["background.js"] },
   "permissions": [
     "tabs", "http://*/*"
@@ -16,5 +17,21 @@
       "19": "images/19.png",
       "38": "images/38.png"
     }
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://github.com/*res/values*",
+        "*://github.com/*res/drawable*",
+        "*://github.com/*res/layout*",
+        "*://github.com/*res/anim*",
+        "*://github.com/*res/menu",
+        "*://github.com/*res/xml*"
+      ],
+      "js": [
+        "res-linkify.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": ["injected.js"]
 }
