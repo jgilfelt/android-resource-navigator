@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "AOSP Resource Browser",
+  "version": "0.1",
+  "background": { "scripts": ["background.js"] },
+  "permissions": [
+    "tabs", "http://*/*"
+  ],
+  "icons": {
+    "128": "images/117.png"
+  },
+  "browser_action": {
+    "default_title": "AOSP Resources",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "19": "images/19.png",
+      "38": "images/38.png"
+    }
+  }
+}
