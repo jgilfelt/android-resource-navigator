@@ -29,9 +29,10 @@
         "*://github.com/*res/xml*"
       ],
       "js": [
+        "page-find-injected.js",
         "res-linkify.js"
       ]
     }
   ],
-  "web_accessible_resources": ["injected.js"]
+  "web_accessible_resources": ["resolver-injected.js", "page-find-injected.js"]
 }
