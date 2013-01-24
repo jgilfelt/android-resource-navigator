@@ -1,4 +1,4 @@
-var _RESOURCE_ID_REGEX = "@((android:)?(anim|animator|drawable|style|color|dimen|layout|string|menu)/([A-Za-z0-9_:\.\/])*)";
+var _RESOURCE_ID_REGEX = "@((android:)?(anim|animator|drawable|style|color|dimen|layout|interpolator|string|menu|array|integer|attr|id|bool)/([A-Za-z0-9_:\.\/])*)";
 
 function linkify() {
   

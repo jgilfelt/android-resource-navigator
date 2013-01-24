@@ -1,8 +1,13 @@
 var _ARN_VALUES_MAP = {
-  'string'     : { bucket:'values',             file:'strings.xml' },
-  'color'      : { bucket:'values',             file:'colors.xml' },
-  'style'      : { bucket:'values',             file:'styles.xml' },
-  'dimen'      : { bucket:'values',             file:'dimens.xml' }
+  'string'     : { file:'strings.xml' },
+  'color'      : { file:'colors.xml' },
+  'style'      : { file:'styles.xml' },
+  'dimen'      : { file:'dimens.xml' },
+  'bool'       : { file:'bools.xml' },
+  'id'         : { file:'ids.xml' },
+  'attr'       : { file:'attrs.xml' },
+  'integer'    : { file:'integers.xml' },
+  'array'      : { file:'arrays.xml' }
 };
 
 function arn_resolve(s) {
@@ -16,7 +21,7 @@ function arn_resolve(s) {
 
   if (resType in _ARN_VALUES_MAP) {
     // in values bucket
-    var loc = urlBase + _ARN_VALUES_MAP[resType].bucket + '/' + _ARN_VALUES_MAP[resType].file;
+    var loc = urlBase + 'values/' + _ARN_VALUES_MAP[resType].file;
     var inPage = (loc === window.location.href.split('#')[0]); // target is current page
     
     if (inPage) {
