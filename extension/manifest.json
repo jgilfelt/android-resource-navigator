@@ -1,9 +1,10 @@
 {
   "manifest_version": 2,
   "name": "Android Resource Navigator for GitHub",
-  "description": "Enhanced web based resource navigation for Android projects",
+  "description": "Enhanced resource navigation for GitHub hosted Android projects",
   "version": "0.1.0",
   "background": { "scripts": ["background.js"] },
+  "options_page": "options.html",
   "permissions": [
     "tabs", "http://*/*"
   ],
@@ -11,7 +12,7 @@
     "128": "images/117.png"
   },
   "browser_action": {
-    "default_title": "Android Resources",
+    "default_title": "Android Framework Resources",
     "default_popup": "popup.html",
     "default_icon": {
       "19": "images/19.png",
