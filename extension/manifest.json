@@ -1,15 +1,18 @@
 {
   "manifest_version": 2,
-  "name": "Android Resource Navigator for GitHub",
+  "name": "Android Resource Navigator",
   "description": "Enhanced resource navigation for GitHub hosted Android projects",
   "version": "0.1.0",
   "background": { "scripts": ["background.js"] },
   "options_page": "options.html",
   "permissions": [
     "tabs", 
-    "http://*/*",
+    "https://raw.github.com/",
     "storage"
   ],
+  "omnibox": {
+    "keyword": "arn"
+  },
   "icons": {
     "128": "images/117.png"
   },
