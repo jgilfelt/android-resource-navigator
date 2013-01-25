@@ -1,11 +1,12 @@
 var _RESOURCE_ID_REGEX = "@((android:)?(anim|animator|drawable|style|color|dimen|layout|interpolator|string|menu|array|integer|attr|id|bool)/([A-Za-z0-9_:\.\/])*)";
+var _STYLE_PARENT_REGEX = '"([^@].*)"';
 
 function linkify() {
   
   // remove dom listener
   document.getElementById('slider').removeEventListener("DOMSubtreeModified", fireLinkify, false);
 
-  // linkify the resource items
+  // find the resource identifiers
   var re = new RegExp();
   re.compile(_RESOURCE_ID_REGEX);
 
@@ -23,13 +24,46 @@ function linkify() {
     false);
 
   var nodes = [];
-
+  
   while(walker.nextNode()) {
     nodes.push(walker.currentNode);
   }
 
+  // find any style parents
+  var prevNode = '';
+  var re2 = new RegExp();
+  re2.compile(_STYLE_PARENT_REGEX);
+
+  var walker2 = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    function(node) {
+      var matches = node.textContent.match(re2);
+      if(matches && prevNode === 'parent=') {
+        //console.log(node.textContent);
+        prevNode = node.textContent;
+        return NodeFilter.FILTER_ACCEPT;
+      } else {
+        prevNode = node.textContent;
+        return NodeFilter.FILTER_SKIP;
+      }
+    },
+    false);
+
+  var nodesStyleParent = [];
+
+  while(walker2.nextNode()) {
+    nodesStyleParent.push(walker2.currentNode);
+  }
+  
+  // linkify the resource items
   for(var i = 0; node=nodes[i] ; i++) {
     node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, "<a href='javascript:arn_resolve(\"$1\")'>@$1</a>");
+  }
+
+  // linkify the style parents
+  for(var i = 0; node2=nodesStyleParent[i] ; i++) {
+    node2.parentNode.innerHTML = node2.parentNode.innerHTML.replace(re2, "<a href='javascript:arn_resolve(\"style/$1\")'>\"$1\"</a>");
   }
   
   // add dom listener
