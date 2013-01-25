@@ -3,6 +3,8 @@ Android Resource Navigator
 
 A Google Chrome Extension providing enhanced resource navigation for GitHub hosted Android projects.
 
+<a href="https://chrome.google.com/webstore/detail/android-resource-navigato/agoomkionjjbejegcejiefodgbckeebo?hl=en&gl=GB"><img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/chrome-store-badge.png"/></a>
+
 Features
 --------
 

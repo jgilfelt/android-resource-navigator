@@ -2,7 +2,8 @@
   "manifest_version": 2,
   "name": "Android Resource Navigator",
   "description": "Enhanced resource navigation for GitHub hosted Android projects",
-  "version": "0.0.1",
+  "homepage_url": "http://jgilfelt.github.com/android-resource-navigator",
+  "version": "0.1.0",
   "background": { "scripts": ["background.js"] },
   "options_page": "options.html",
   "permissions": [
