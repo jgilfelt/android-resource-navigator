@@ -53,6 +53,7 @@ Credits
 -------
 
 Author: [Jeff Gilfelt](https://github.com/jgilfelt)
+
 Original omnibox search code by Roman Nurik
 
 License
