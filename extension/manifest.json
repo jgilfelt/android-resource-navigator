@@ -14,7 +14,7 @@
     "keyword": "arn"
   },
   "icons": {
-    "128": "images/logo-117.png"
+    "128": "images/logo-128.png"
   },
   "browser_action": {
     "default_title": "Android Framework Resources",
