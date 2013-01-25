@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Android Resource Navigator",
   "description": "Enhanced resource navigation for GitHub hosted Android projects",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "background": { "scripts": ["background.js"] },
   "options_page": "options.html",
   "permissions": [
@@ -14,14 +14,15 @@
     "keyword": "arn"
   },
   "icons": {
-    "128": "images/117.png"
+    "128": "images/logo-117.png"
   },
   "browser_action": {
     "default_title": "Android Framework Resources",
     "default_popup": "popup.html",
     "default_icon": {
-      "19": "images/19.png",
-      "38": "images/38.png"
+      "16": "images/logo-16.png",
+      "19": "images/logo-19.png",
+      "38": "images/logo-38.png"
     }
   },
   "content_scripts": [
@@ -35,6 +36,7 @@
         "*://github.com/*res/xml*"
       ],
       "js": [
+        "defaults.js",
         "page-find-injected.js",
         "res-linkify.js"
       ]

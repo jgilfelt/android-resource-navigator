@@ -84,7 +84,7 @@ function injectJS() {
       //alert(val);
       js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(val) + ';';
     } else {
-      js = 'var _ARN_VALUES_OVERRIDES = null;'
+      js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(_DEFAULT_VALUES) + ';';
     }
 
     var s3 = document.createElement('script');

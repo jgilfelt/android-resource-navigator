@@ -48,12 +48,12 @@ function toJson(xml, targetUrl, subLabel, data, startIndex) {
   if (xml.hasChildNodes()) {
     for(var h = 0; h < xml.childNodes.length; h++) {
       var item1 = xml.childNodes.item(h);
-      console.log(item1.nodeName);
+      //console.log(item1.nodeName);
       if (item1.nodeName === 'resources') {
         if (item1.hasChildNodes()) {
           for(var i = 0; i < item1.childNodes.length; i++) {
             var item = item1.childNodes.item(i);
-            console.log(item.nodeName);
+            //console.log(item.nodeName);
             if (item.nodeName == 'style') {
               if (item.attributes.length > 0) {
                 for (var j = 0; j < item.attributes.length; j++) {
