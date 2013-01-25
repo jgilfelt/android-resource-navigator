@@ -8,28 +8,28 @@ Features
 
 ### Linkified XML resources
 
-![feature-linkify](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-linkify.png "feature-linkify")
-
 Android XML resources viewed on GitHub are processed so that any contained resource identifiers will link directly to the appropriate external file and specific declaration line where appropriate.
+
+![feature-linkify](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-linkify.png "feature-linkify")
 
 ### Framework styles browser action
 
-![feature-browser-action](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-browser-action.png "feature-browser-action")
-
 Quickly open the Android framework styles or themes XML via an always available browser action button.
 
-### Framework styles search omnibox*
+![feature-browser-action](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-browser-action.png "feature-browser-action")
 
-![feature-omnibox](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-omnibox.png "feature-omnibox")
+### Framework styles search omnibox
 
 Type 'arn ' followed by a search term into the address bar to find a particular Android framework style or theme. Use the suggestions to navigate directly to the appropriate XML resource definition.
+
+![feature-omnibox](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-omnibox.png "feature-omnibox")
 
 Caveats
 -------
 
 This is currently beta quality code and there are many known [limitations and issues](https://github.com/jgilfelt/android-resource-navigator/issues)
 
-The extension resolves resource links according to certain file naming conventions that are common (but not required) in Android projects. Since resource types can be and often are defined in multiple files, it does guarantee that all links will be successfully resolved. 
+Resource links are resolved according to certain file naming conventions that are common (but not required) in Android projects. Since resource types can be and often are defined in multiple files, it does guarantee that all links will be successfully resolved. 
 
 To better support projects that use alternate resource file naming conventions, you can override the defaults by providing a JSON map keyed with a regex string matching the owner/project. This is managed within the extension's options.
 
