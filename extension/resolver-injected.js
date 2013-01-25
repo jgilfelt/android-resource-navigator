@@ -1,27 +1,33 @@
 var _ARN_VALUES_MAP = {
-  'string'     : { file:'strings.xml' },
-  'color'      : { file:'colors.xml' },
-  'style'      : { file:'styles.xml' },
-  'dimen'      : { file:'dimens.xml' },
-  'bool'       : { file:'bools.xml' },
-  'id'         : { file:'ids.xml' },
-  'attr'       : { file:'attrs.xml' },
-  'integer'    : { file:'integers.xml' },
-  'array'      : { file:'arrays.xml' }
+  'string'     : 'strings.xml',
+  'color'      : 'colors.xml',
+  'style'      : 'styles.xml',
+  'dimen'      : 'dimens.xml',
+  'bool'       : 'bools.xml',
+  'id'         : 'ids.xml',
+  'attr'       : 'attrs.xml',
+  'integer'    : 'integers.xml',
+  'array'      : 'arrays.xml'
 };
 
 function arn_resolve(s) {
+
   var url = window.location.href;
   var resPath = s.replace('android:', '');
   var resName = resPath.slice(resPath.lastIndexOf('/')+1, resPath.length);
   var resType = resPath.slice(0, resPath.indexOf('/'));
   var urlBase = url.slice(0, url.lastIndexOf('/res')+5);
   var xmlUrl = urlBase + resPath + ".xml";
+  var project = url.split('/')[3] + '/' + url.split('/')[4]; // user/project
+
   console.log(resType);
 
-  if (resType in _ARN_VALUES_MAP) {
+  //alert(project);
+  var valuesMap = arn_getValuesMap(project);
+
+  if (resType in valuesMap) {
     // in values bucket
-    var loc = urlBase + 'values/' + _ARN_VALUES_MAP[resType].file;
+    var loc = urlBase + 'values/' + valuesMap[resType];
     var inPage = (loc === window.location.href.split('#')[0]); // target is current page
     
     if (inPage) {
@@ -58,6 +64,22 @@ function arn_resolve(s) {
     window.location.href = xmlUrl;
   }
 
+}
+
+function arn_getValuesMap(project) {
+  if (_ARN_VALUES_OVERRIDES) { // injected
+    for (var key in _ARN_VALUES_OVERRIDES) {
+      if (_ARN_VALUES_OVERRIDES.hasOwnProperty(key)) {
+        //alert(key + " -> " + _ARN_VALUES_OVERRIDES[key]);
+        var re = new RegExp();
+        re.compile(key);
+        if (project.match(re)) {
+          return _ARN_VALUES_OVERRIDES[key];
+        }
+      }
+    }
+  }
+  return _ARN_VALUES_MAP;
 }
 
 function arn_checkTarget(targetUrl, functionOk, functionFail) {

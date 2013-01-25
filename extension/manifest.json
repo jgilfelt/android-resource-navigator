@@ -6,7 +6,9 @@
   "background": { "scripts": ["background.js"] },
   "options_page": "options.html",
   "permissions": [
-    "tabs", "http://*/*"
+    "tabs", 
+    "http://*/*",
+    "storage"
   ],
   "icons": {
     "128": "images/117.png"

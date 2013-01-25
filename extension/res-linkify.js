@@ -42,10 +42,29 @@ function injectJS() {
   s.src = chrome.extension.getURL("resolver-injected.js");
   var s2 = document.createElement('script');
   s2.src = chrome.extension.getURL("page-find-injected.js");
-  (document.head||document.documentElement).appendChild(s);
-  (document.head||document.documentElement).appendChild(s2);
-  s.parentNode.removeChild(s);
-  s2.parentNode.removeChild(s2);
+
+  chrome.storage.sync.get('values_override', function(items) {
+    var js;
+    if (items.values_override) {
+      var val = items.values_override;
+      //alert(val);
+      js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(val) + ';';
+    } else {
+      js = 'var _ARN_VALUES_OVERRIDES = null;'
+    }
+
+    var s3 = document.createElement('script');
+    s3.innerText = js;
+    (document.head||document.documentElement).appendChild(s3);
+    //s3.parentNode.removeChild(s3);
+
+    (document.head||document.documentElement).appendChild(s);
+    (document.head||document.documentElement).appendChild(s2);
+    s.parentNode.removeChild(s);
+    s2.parentNode.removeChild(s2);
+
+  });
+  
 }
 
 function doLinkify() {
