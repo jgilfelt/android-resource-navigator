@@ -31,7 +31,7 @@ Caveats
 
 This is currently beta quality code and there are many known [limitations and issues](https://github.com/jgilfelt/android-resource-navigator/issues).
 
-Resource links are resolved according to certain file naming conventions that are common (but not required) in Android projects. Since resource types can be and often are defined in multiple files, it does guarantee that all links will be successfully resolved. 
+Resource links are resolved according to certain file naming conventions that are common (but not required) in Android projects. Since resource types can be, and often are defined in multiple files it cannot guarantee that all links will be successfully resolved. 
 
 To better support projects that use alternate resource file naming conventions, you can override the defaults by providing a JSON map keyed with a regex string matching the owner/project. This is managed within the extension's options.
 
@@ -54,9 +54,9 @@ An example override for all forks of the popular [ActionBarSherlock](https://git
 Credits
 -------
 
-Author: [Jeff Gilfelt](https://github.com/jgilfelt)
+Author: [Jeff Gilfelt](https://github.com/jgilfelt).
 
-Original omnibox search code by Roman Nurik
+Original omnibox search code by Roman Nurik.
 
 License
 -------
