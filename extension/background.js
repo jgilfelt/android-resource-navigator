@@ -26,6 +26,17 @@ chrome.omnibox.setDefaultSuggestion({
   description: 'Loading AOSP reference data...'
 });
 
+var downloadHandler = function(info, tab) {
+  alert('downloadHandler');
+}
+
+chrome.contextMenus.create({
+  "title": "Download Drawable",
+  "contexts": ["page"],
+  "documentUrlPatterns": [ "*://github.com/*res/drawable*/*" ],
+  "onclick" : downloadHandler
+});
+
 var DATA;
 
 function get(url, callbackFn) {

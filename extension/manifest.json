@@ -9,7 +9,8 @@
   "permissions": [
     "tabs", 
     "https://raw.github.com/",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "omnibox": {
     "keyword": "arn"
