@@ -22,13 +22,138 @@ var REF_THEMES_XML_URL_RAW = 'https://raw.github.com/android/platform_frameworks
 var REF_STYLES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/styles.xml';
 var REF_THEMES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/themes.xml';
 
+var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi' ];
+var XML_DRAWABLE_BUCKETS = [ 'drawable' ];
+
 chrome.omnibox.setDefaultSuggestion({
   description: 'Loading AOSP reference data...'
 });
 
+// ***************************************************************
+// Drawable downloader
+
 var downloadHandler = function(info, tab) {
-  alert('downloadHandler');
+  //alert('downloadHandler');
+
+  window.URL = window.URL || window.webkitURL || window.mozURL;
+  window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                       window.MozBlobBuilder;
+  
+  var files = [];
+  var isBinary = (info.pageUrl.indexOf('.png') > 0);
+  var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+
+  getDrawableFileData(info.pageUrl, files, buckets, 0, function(files) {
+    if (files.length > 0) {
+      var zip = new JSZip();
+      var res = zip.folder('res');
+      for (var i=0; i < files.length; i++) {
+        var folder = res.folder(files[i].folder);
+        folder.file(files[i].filename, files[i].data, {base64: true});
+      }
+      var content = zip.generate();
+      var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
+      navigateToUrl(zipUrl);
+
+    }
+  });
+  
+      //navigateToUrl("data:application/zip;base64,"+content);
+
+      //var a = document.createElement('a');
+      //a.href = zipUrl;
+      //a.download = filename + '.zip'; // set the file name
+      //a.style.display = 'none';
+      //document.body.appendChild(a);
+      //a.click();
+      //delete a;// we don't need this anymore
+
 }
+
+function getDrawableFileData(url, files, buckets, index, callback) {
+    var a = url.split('/');
+    var densityUrl = url.replace(a[a.length-2], buckets[index]);
+    console.log(densityUrl);
+    getRawGitHubData(densityUrl, function(folder, filename, data) {
+      if (data) {
+         var file = {};
+         file.folder = folder;
+         file.filename = filename;
+         file.data = data;
+         files.push(file);
+      }
+      if (index < buckets.length-1) {
+        getDrawableFileData(url, files, buckets, index+1, callback);
+      } else {
+        callback(files);
+      }
+    });
+}
+
+function getRawGitHubData(url, callback) {
+  var rawUrl = url.replace('github.com', 'raw.github.com').replace('blob/', '');
+  var a = rawUrl.split('/');
+  var folder = a[a.length-2];
+  var filename = a[a.length-1];
+
+  var isBinary = (rawUrl.indexOf('.png') > 0);
+  var xhr = new XMLHttpRequest();
+  console.log(rawUrl);
+  console.log(isBinary);
+  xhr.open("GET", rawUrl, true);
+  //if (isBinary) {
+    xhr.responseType = 'arraybuffer';
+  //} else {
+   // xhr.overrideMimeType('text/plain; charset=x-user-defined');
+  //}
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      console.log(xhr.status);
+      if (xhr.status==200) {
+        //if (isBinary) {
+          callback(folder, filename, this.response);
+        //} else {
+        //  okFunction(folder, filename, this.responseText);
+        //}
+        //return this.responseText;
+      } else {
+         callback(folder, filename, null);
+      }   
+    }
+  }
+  xhr.send();
+}
+
+/**
+ * Converts a base64 string to a Blob
+ */
+function base64ToBlob_(base64, mimetype) {
+    var BASE64_MARKER = ';base64,';
+    var raw = window.atob(base64);
+    var rawLength = raw.length;
+    var uInt8Array = new Uint8Array(rawLength);
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    if (hasBlobConstructor()) {
+      return new Blob([uInt8Array], {type: mimetype})
+    }
+
+    var bb = new BlobBuilder();
+    bb.append(uInt8Array.buffer);
+    return bb.getBlob(mimetype);
+}
+
+// https://github.com/gildas-lormeau/zip.js/issues/17#issuecomment-8513258
+// thanks Eric!
+hasBlobConstructor = function() {
+  try {
+    return !!new Blob();
+  } catch(e) {
+    return false;
+  }
+};
 
 chrome.contextMenus.create({
   "title": "Download Drawable",
@@ -36,6 +161,8 @@ chrome.contextMenus.create({
   "documentUrlPatterns": [ "*://github.com/*res/drawable*/*" ],
   "onclick" : downloadHandler
 });
+
+// ***************************************************************
 
 var DATA;
 
