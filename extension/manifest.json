@@ -9,6 +9,7 @@
   "permissions": [
     "tabs", 
     "https://raw.github.com/",
+    "https://github.com/",
     "storage",
     "contextMenus"
   ],

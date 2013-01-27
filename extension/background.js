@@ -39,24 +39,24 @@ var downloadHandler = function(info, tab) {
   window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
                        window.MozBlobBuilder;
   
+  var urls = [];
   var files = [];
+  
   var isBinary = (info.pageUrl.indexOf('.png') > 0);
-  var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+    
+  if (isBinary || drawableRefs.length == 0) {
+    var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+    getDrawableFileData(info.pageUrl, files, buckets, 0, doZip);
+  } else {
+    resolve(info.pageUrl, drawableRefs, urls, 0, function(urls) {
+      urls.push(info.pageUrl);
+      getAllDrawableFileData(urls, files, 0, doZip); 
+    });
+  }
+  
+  
 
-  getDrawableFileData(info.pageUrl, files, buckets, 0, function(files) {
-    if (files.length > 0) {
-      var zip = new JSZip();
-      var res = zip.folder('res');
-      for (var i=0; i < files.length; i++) {
-        var folder = res.folder(files[i].folder);
-        folder.file(files[i].filename, files[i].data, {base64: true});
-      }
-      var content = zip.generate();
-      var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
-      navigateToUrl(zipUrl);
-
-    }
-  });
+  
   
       //navigateToUrl("data:application/zip;base64,"+content);
 
@@ -68,6 +68,32 @@ var downloadHandler = function(info, tab) {
       //a.click();
       //delete a;// we don't need this anymore
 
+}
+
+function doZip(files) {
+  if (files.length > 0) {
+      var zip = new JSZip();
+      var res = zip.folder('res');
+      for (var i=0; i < files.length; i++) {
+        var folder = res.folder(files[i].folder);
+        folder.file(files[i].filename, files[i].data, {base64: true});
+      }
+      var content = zip.generate();
+      var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
+      navigateToUrl(zipUrl);
+  }
+}
+
+function getAllDrawableFileData(urls, files, index, callback) {
+  var isBinary = (urls[index].indexOf('.png') > 0);
+  var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+  getDrawableFileData(urls[index], files, buckets, 0, function(files) {
+    if (index < urls.length-1) {
+      getAllDrawableFileData(urls, files, index+1, callback);
+    } else {
+      callback(files);
+    }
+  });
 }
 
 function getDrawableFileData(url, files, buckets, index, callback) {
@@ -124,6 +150,59 @@ function getRawGitHubData(url, callback) {
   xhr.send();
 }
 
+
+function resolve(url, ids, results, index, callback) {
+
+  var resPath = 'drawable/' + ids[index];
+  var urlBase = url.slice(0, url.lastIndexOf('/res')+5);
+  var xmlUrl = urlBase + resPath + ".xml";
+
+  var pathHdpi = resPath.replace('drawable', 'drawable-hdpi');
+  var nineUrl = urlBase + pathHdpi + ".9.png";
+  var pngUrl = urlBase + pathHdpi + ".png";
+
+	// try 9 patch
+    checkTarget(nineUrl,
+      function() {
+        results.push(nineUrl);
+        if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+      },
+      function() {
+		// regular png
+        
+        checkTarget(pngUrl,
+          function() {
+            results.push(pngUrl);
+            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+          },
+          function() {
+            // xml
+	        results.push(xmlUrl);
+            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+          }
+        );
+      }
+    );
+  
+}
+
+function checkTarget(targetUrl, functionOk, functionFail) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", targetUrl, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status==200) {
+        functionOk();
+      } else {
+        functionFail();
+      }
+    }
+  }
+  xhr.send();
+}
+
+
+
 /**
  * Converts a base64 string to a Blob
  */
@@ -160,6 +239,17 @@ chrome.contextMenus.create({
   "contexts": ["page"],
   "documentUrlPatterns": [ "*://github.com/*res/drawable*/*" ],
   "onclick" : downloadHandler
+});
+
+var drawableRefs = [];
+
+chrome.extension.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    drawableRefs = request.refs;
+    console.log(drawableRefs);
 });
 
 // ***************************************************************
