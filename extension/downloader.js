@@ -1,0 +1,249 @@
+/*
+ * Copyright 2013 readyState Software Ltd, 2012 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var notification;
+
+var downloadHandler = function(info, tab) {
+  //alert('downloadHandler');
+
+  notification = webkitNotifications.createNotification(
+    'images/logo-38.png',  // icon url - can be relative
+    'Downloading Drawable',  // notification title
+    'This might take a few seconds...'  // notification body text
+  );
+
+  notification.show();
+
+  window.URL = window.URL || window.webkitURL || window.mozURL;
+  window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                       window.MozBlobBuilder;
+  
+  var urls = [];
+  var files = [];
+  
+  var isBinary = (info.pageUrl.indexOf('.png') > 0);
+    
+  if (isBinary || drawableRefs.length == 0) {
+    var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+    getDrawableFileData(info.pageUrl, files, buckets, 0, doZip);
+  } else {
+    resolve(info.pageUrl, drawableRefs, urls, 0, function(urls) {
+      urls.push(info.pageUrl);
+      getAllDrawableFileData(urls, files, 0, doZip); 
+    });
+  }
+  
+  
+
+  
+  
+      //navigateToUrl("data:application/zip;base64,"+content);
+
+      //var a = document.createElement('a');
+      //a.href = zipUrl;
+      //a.download = filename + '.zip'; // set the file name
+      //a.style.display = 'none';
+      //document.body.appendChild(a);
+      //a.click();
+      //delete a;// we don't need this anymore
+
+}
+
+function doZip(files) {
+  if (files.length > 0) {
+      var zip = new JSZip();
+      var res = zip.folder('res');
+      for (var i=0; i < files.length; i++) {
+        var folder = res.folder(files[i].folder);
+        folder.file(files[i].filename, files[i].data, {base64: true});
+      }
+      var content = zip.generate();
+      var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
+      navigateToUrl(zipUrl);
+
+      notification.cancel();
+  }
+}
+
+function getAllDrawableFileData(urls, files, index, callback) {
+  var isBinary = (urls[index].indexOf('.png') > 0);
+  var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
+  getDrawableFileData(urls[index], files, buckets, 0, function(files) {
+    if (index < urls.length-1) {
+      getAllDrawableFileData(urls, files, index+1, callback);
+    } else {
+      callback(files);
+    }
+  });
+}
+
+function getDrawableFileData(url, files, buckets, index, callback) {
+    var a = url.split('/');
+    var densityUrl = url.replace(a[a.length-2], buckets[index]);
+    console.log(densityUrl);
+    getRawGitHubData(densityUrl, function(folder, filename, data) {
+      if (data) {
+         var file = {};
+         file.folder = folder;
+         file.filename = filename;
+         file.data = data;
+         files.push(file);
+      }
+      if (index < buckets.length-1) {
+        getDrawableFileData(url, files, buckets, index+1, callback);
+      } else {
+        callback(files);
+      }
+    });
+}
+
+function getRawGitHubData(url, callback) {
+  var rawUrl = url.replace('github.com', 'raw.github.com').replace('blob/', '');
+  var a = rawUrl.split('/');
+  var folder = a[a.length-2];
+  var filename = a[a.length-1];
+
+  var isBinary = (rawUrl.indexOf('.png') > 0);
+  var xhr = new XMLHttpRequest();
+  console.log(rawUrl);
+  console.log(isBinary);
+  xhr.open("GET", rawUrl, true);
+  //if (isBinary) {
+    xhr.responseType = 'arraybuffer';
+  //} else {
+   // xhr.overrideMimeType('text/plain; charset=x-user-defined');
+  //}
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      console.log(xhr.status);
+      if (xhr.status==200) {
+        //if (isBinary) {
+          callback(folder, filename, this.response);
+        //} else {
+        //  okFunction(folder, filename, this.responseText);
+        //}
+        //return this.responseText;
+      } else {
+         callback(folder, filename, null);
+      }   
+    }
+  }
+  xhr.send();
+}
+
+
+function resolve(url, ids, results, index, callback) {
+
+  var resPath = 'drawable/' + ids[index];
+  var urlBase = url.slice(0, url.lastIndexOf('/res')+5);
+  var xmlUrl = urlBase + resPath + ".xml";
+
+  var pathHdpi = resPath.replace('drawable', 'drawable-hdpi');
+  var nineUrl = urlBase + pathHdpi + ".9.png";
+  var pngUrl = urlBase + pathHdpi + ".png";
+
+	// try 9 patch
+    checkTarget(nineUrl,
+      function() {
+        results.push(nineUrl);
+        if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+      },
+      function() {
+		// regular png
+        
+        checkTarget(pngUrl,
+          function() {
+            results.push(pngUrl);
+            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+          },
+          function() {
+            // xml
+	        results.push(xmlUrl);
+            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+          }
+        );
+      }
+    );
+  
+}
+
+function checkTarget(targetUrl, functionOk, functionFail) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", targetUrl, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status==200) {
+        functionOk();
+      } else {
+        functionFail();
+      }
+    }
+  }
+  xhr.send();
+}
+
+
+
+/**
+ * Converts a base64 string to a Blob
+ */
+function base64ToBlob_(base64, mimetype) {
+    var BASE64_MARKER = ';base64,';
+    var raw = window.atob(base64);
+    var rawLength = raw.length;
+    var uInt8Array = new Uint8Array(rawLength);
+    for (var i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    if (hasBlobConstructor()) {
+      return new Blob([uInt8Array], {type: mimetype})
+    }
+
+    var bb = new BlobBuilder();
+    bb.append(uInt8Array.buffer);
+    return bb.getBlob(mimetype);
+}
+
+// https://github.com/gildas-lormeau/zip.js/issues/17#issuecomment-8513258
+// thanks Eric!
+hasBlobConstructor = function() {
+  try {
+    return !!new Blob();
+  } catch(e) {
+    return false;
+  }
+};
+
+// ******
+
+chrome.contextMenus.create({
+  "title": "Download Drawable",
+  "contexts": ["page"],
+  "documentUrlPatterns": [ "*://github.com/*res/drawable*/*" ],
+  "onclick" : downloadHandler
+});
+
+var drawableRefs = [];
+
+chrome.extension.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    drawableRefs = request.refs;
+    console.log(drawableRefs);
+});
