@@ -17,12 +17,11 @@
 var notification;
 
 var downloadHandler = function(info, tab) {
-  //alert('downloadHandler');
-
+  
   notification = webkitNotifications.createNotification(
-    'images/logo-38.png',  // icon url - can be relative
-    'Downloading Drawable',  // notification title
-    'This might take a few seconds...'  // notification body text
+    'images/logo-38.png',
+    'Downloading Drawable',
+    'This might take a few seconds...'
   );
 
   notification.show();
@@ -36,45 +35,43 @@ var downloadHandler = function(info, tab) {
   
   var isBinary = (info.pageUrl.indexOf('.png') > 0);
     
-  if (isBinary || drawableRefs.length == 0) {
-    var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
-    getDrawableFileData(info.pageUrl, files, buckets, 0, doZip);
+  if (isBinary) {
+    getDrawableFileData(info.pageUrl, files, BITMAP_DRAWABLE_BUCKETS, 0, doZip);
   } else {
-    resolve(info.pageUrl, drawableRefs, urls, 0, function(urls) {
-      urls.push(info.pageUrl);
-      getAllDrawableFileData(urls, files, 0, doZip); 
-    });
+    urls.push(info.pageUrl);
+    getAllDrawableFileData(urls, files, 0, doZip); 
   }
   
-  
+  //navigateToUrl("data:application/zip;base64,"+content);
 
-  
-  
-      //navigateToUrl("data:application/zip;base64,"+content);
-
-      //var a = document.createElement('a');
-      //a.href = zipUrl;
-      //a.download = filename + '.zip'; // set the file name
-      //a.style.display = 'none';
-      //document.body.appendChild(a);
-      //a.click();
-      //delete a;// we don't need this anymore
+  //var a = document.createElement('a');
+  //a.href = zipUrl;
+  //a.download = filename + '.zip'; // set the file name
+  //a.style.display = 'none';
+  //document.body.appendChild(a);
+  //a.click();
+  //delete a;// we don't need this anymore
 
 }
 
 function doZip(files) {
   if (files.length > 0) {
-      var zip = new JSZip();
-      var res = zip.folder('res');
-      for (var i=0; i < files.length; i++) {
-        var folder = res.folder(files[i].folder);
-        folder.file(files[i].filename, files[i].data, {base64: true});
+    var zip = new JSZip();
+    var res = zip.folder('res');
+    for (var i=0; i < files.length; i++) {
+      var folder = res.folder(files[i].folder);
+      var fileData;
+	  if (!files[i].isBinary) {
+        fileData = removePlatformResourcePrefix(files[i].data);
+      } else {
+        fileData = files[i].data;
       }
-      var content = zip.generate();
-      var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
-      navigateToUrl(zipUrl);
-
-      notification.cancel();
+      folder.file(files[i].filename, fileData, {base64: files[i].isBinary});
+    }
+    var content = zip.generate();
+    var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
+    navigateToUrl(zipUrl);
+    notification.cancel();
   }
 }
 
@@ -94,18 +91,30 @@ function getDrawableFileData(url, files, buckets, index, callback) {
     var a = url.split('/');
     var densityUrl = url.replace(a[a.length-2], buckets[index]);
     console.log(densityUrl);
-    getRawGitHubData(densityUrl, function(folder, filename, data) {
+    getRawGitHubData(densityUrl, function(folder, filename, data, isBinary) {
       if (data) {
          var file = {};
          file.folder = folder;
          file.filename = filename;
          file.data = data;
+         file.isBinary = isBinary;
          files.push(file);
-      }
-      if (index < buckets.length-1) {
-        getDrawableFileData(url, files, buckets, index+1, callback);
+         
+         if (!isBinary) {
+            // get xml references
+            var urls = [];
+      		var ids = findDrawableRefs(file.data);
+            resolve(url, ids, urls, 0, function(urls) {
+              getAllDrawableFileData(urls, files, 0, function(refedFiles) {
+                files = files.concat(refedFiles);
+                if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
+              }); 
+            });
+         } else {
+           if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
+         }
       } else {
-        callback(files);
+        if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
       }
     });
 }
@@ -115,29 +124,25 @@ function getRawGitHubData(url, callback) {
   var a = rawUrl.split('/');
   var folder = a[a.length-2];
   var filename = a[a.length-1];
-
   var isBinary = (rawUrl.indexOf('.png') > 0);
   var xhr = new XMLHttpRequest();
   console.log(rawUrl);
   console.log(isBinary);
   xhr.open("GET", rawUrl, true);
-  //if (isBinary) {
+  if (isBinary) {
     xhr.responseType = 'arraybuffer';
-  //} else {
-   // xhr.overrideMimeType('text/plain; charset=x-user-defined');
-  //}
+  }
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       console.log(xhr.status);
       if (xhr.status==200) {
-        //if (isBinary) {
-          callback(folder, filename, this.response);
-        //} else {
-        //  okFunction(folder, filename, this.responseText);
-        //}
-        //return this.responseText;
+        if (isBinary) {
+          callback(folder, filename, this.response, isBinary);
+        } else {
+          callback(folder, filename, this.responseText, isBinary);
+        }
       } else {
-         callback(folder, filename, null);
+         callback(folder, filename, null, isBinary);
       }   
     }
   }
@@ -147,37 +152,51 @@ function getRawGitHubData(url, callback) {
 
 function resolve(url, ids, results, index, callback) {
 
-  var resPath = 'drawable/' + ids[index];
+  var resPath = 'drawable/' + ids[index].split('/')[1];
   var urlBase = url.slice(0, url.lastIndexOf('/res')+5);
   var xmlUrl = urlBase + resPath + ".xml";
 
   var pathHdpi = resPath.replace('drawable', 'drawable-hdpi');
   var nineUrl = urlBase + pathHdpi + ".9.png";
   var pngUrl = urlBase + pathHdpi + ".png";
-
-	// try 9 patch
-    checkTarget(nineUrl,
-      function() {
-        results.push(nineUrl);
-        if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
-      },
-      function() {
-		// regular png
-        
-        checkTarget(pngUrl,
-          function() {
-            results.push(pngUrl);
-            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
-          },
-          function() {
-            // xml
-	        results.push(xmlUrl);
-            if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
-          }
-        );
-      }
-    );
   
+  // try 9 patch
+  checkTarget(nineUrl,
+    function() {
+      results.push(nineUrl);
+      if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+    },
+    function() {
+      // regular png
+      checkTarget(pngUrl,
+        function() {
+          results.push(pngUrl);
+          if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+        },
+        function() {
+          // xml
+	      results.push(xmlUrl);
+          if (index < ids.length-1) { resolve(url, ids, results, index+1, callback); } else { callback(results); }
+        }
+      );
+    }
+  );
+  
+}
+
+var _DRAWABLE_ID_REGEX = "@((android:)?(drawable)/([A-Za-z0-9_:\.\/])*)";
+
+function findDrawableRefs(body) {
+  var patt=new RegExp(_DRAWABLE_ID_REGEX,'g');
+  var results = body.match(patt);
+  var uniqueArray = results.filter(function(elem, pos) {
+    return results.indexOf(elem) == pos;
+  });
+  return uniqueArray;
+}
+
+function removePlatformResourcePrefix(text) {
+  return text.replace(/@android:/g, '@').replace(/@\+android:/g, '@+');
 }
 
 function checkTarget(targetUrl, functionOk, functionFail) {
@@ -195,31 +214,27 @@ function checkTarget(targetUrl, functionOk, functionFail) {
   xhr.send();
 }
 
-
-
 /**
  * Converts a base64 string to a Blob
  */
 function base64ToBlob_(base64, mimetype) {
-    var BASE64_MARKER = ';base64,';
-    var raw = window.atob(base64);
-    var rawLength = raw.length;
-    var uInt8Array = new Uint8Array(rawLength);
-    for (var i = 0; i < rawLength; ++i) {
-      uInt8Array[i] = raw.charCodeAt(i);
-    }
+  var BASE64_MARKER = ';base64,';
+  var raw = window.atob(base64);
+  var rawLength = raw.length;
+  var uInt8Array = new Uint8Array(rawLength);
+  for (var i = 0; i < rawLength; ++i) {
+    uInt8Array[i] = raw.charCodeAt(i);
+  }
 
-    if (hasBlobConstructor()) {
-      return new Blob([uInt8Array], {type: mimetype})
-    }
+  if (hasBlobConstructor()) {
+    return new Blob([uInt8Array], {type: mimetype})
+  }
 
-    var bb = new BlobBuilder();
-    bb.append(uInt8Array.buffer);
-    return bb.getBlob(mimetype);
+  var bb = new BlobBuilder();
+  bb.append(uInt8Array.buffer);
+  return bb.getBlob(mimetype);
 }
 
-// https://github.com/gildas-lormeau/zip.js/issues/17#issuecomment-8513258
-// thanks Eric!
 hasBlobConstructor = function() {
   try {
     return !!new Blob();
@@ -228,22 +243,21 @@ hasBlobConstructor = function() {
   }
 };
 
-// ******
+
+//var drawableRefs = [];
+
+//chrome.extension.onMessage.addListener(
+//  function(request, sender, sendResponse) {
+//    console.log(sender.tab ?
+//                "from a content script:" + sender.tab.url :
+//                "from the extension");
+//    drawableRefs = request.refs;
+//    console.log(drawableRefs);
+//});
 
 chrome.contextMenus.create({
   "title": "Download Drawable",
   "contexts": ["page"],
   "documentUrlPatterns": [ "*://github.com/*res/drawable*/*" ],
   "onclick" : downloadHandler
-});
-
-var drawableRefs = [];
-
-chrome.extension.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    drawableRefs = request.refs;
-    console.log(drawableRefs);
 });

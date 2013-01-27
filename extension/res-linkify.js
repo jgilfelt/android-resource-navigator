@@ -72,17 +72,8 @@ function linkify() {
     nodesStyleParent.push(walker2.currentNode);
   }
 
-  var drawableRefs = [];
-  
   // linkify the resource items
   for(var i = 0; node=nodes[i] ; i++) {
-    
-    // keep track of drawables - we broadcast these to the extension for our downloader
-    if (node.parentNode.innerHTML.indexOf('drawable/') > 0) {
-        var s = node.parentNode.innerHTML.split('/')[1].replace('"', '');
-		drawableRefs.push(s);
-    }
-
     node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, "<a href='javascript:arn_resolve(\"$1\")'>@$1</a>");
   }
 
@@ -92,7 +83,7 @@ function linkify() {
   }
 
   // broadcast drawables to extension background
-  chrome.extension.sendMessage({refs : drawableRefs}, function(response) {}); 
+  //chrome.extension.sendMessage({refs : drawableRefs}, function(response) {}); 
   
   // add dom listener
   document.getElementById('slider').addEventListener("DOMSubtreeModified", fireLinkify, false);
