@@ -32,8 +32,18 @@ chrome.omnibox.setDefaultSuggestion({
 // ***************************************************************
 // Drawable downloader
 
+var notification;
+
 var downloadHandler = function(info, tab) {
   //alert('downloadHandler');
+
+  notification = webkitNotifications.createNotification(
+    'images/logo-38.png',  // icon url - can be relative
+    'Downloading Drawable',  // notification title
+    'This might take a few seconds...'  // notification body text
+  );
+
+  notification.show();
 
   window.URL = window.URL || window.webkitURL || window.mozURL;
   window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
@@ -81,6 +91,8 @@ function doZip(files) {
       var content = zip.generate();
       var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
       navigateToUrl(zipUrl);
+
+      notification.cancel();
   }
 }
 

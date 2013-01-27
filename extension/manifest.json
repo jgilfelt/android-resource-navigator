@@ -11,7 +11,8 @@
     "https://raw.github.com/",
     "https://github.com/",
     "storage",
-    "contextMenus"
+    "contextMenus",
+    "notifications"
   ],
   "omnibox": {
     "keyword": "arn"
@@ -45,5 +46,5 @@
       ]
     }
   ],
-  "web_accessible_resources": ["resolver-injected.js", "page-find-injected.js"]
+  "web_accessible_resources": ["resolver-injected.js", "page-find-injected.js", "images/logo-38.png"]
 }
