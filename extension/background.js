@@ -22,9 +22,6 @@ var REF_THEMES_XML_URL_RAW = 'https://raw.github.com/android/platform_frameworks
 var REF_STYLES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/styles.xml';
 var REF_THEMES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/themes.xml';
 
-var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi' ];
-var XML_DRAWABLE_BUCKETS = [ 'drawable' ];
-
 chrome.omnibox.setDefaultSuggestion({
   description: 'Loading AOSP reference data...'
 });

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 readyState Software Ltd, 2012 Google Inc.
+ * Copyright 2013 readyState Software Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi' ];
+var XML_DRAWABLE_BUCKETS = [ 'drawable' ];
 
 var notification;
 
@@ -42,6 +45,8 @@ var downloadHandler = function(info, tab) {
     getAllDrawableFileData(urls, files, 0, doZip); 
   }
   
+  // trying to set a filename with HTML5 a.download but don't like side effects
+
   //navigateToUrl("data:application/zip;base64,"+content);
 
   //var a = document.createElement('a');
@@ -76,6 +81,12 @@ function doZip(files) {
 }
 
 function getAllDrawableFileData(urls, files, index, callback) {
+  
+  if (urls.length == 0) {
+    callback;
+    return;
+  }
+
   var isBinary = (urls[index].indexOf('.png') > 0);
   var buckets = (isBinary) ? BITMAP_DRAWABLE_BUCKETS : XML_DRAWABLE_BUCKETS;
   getDrawableFileData(urls[index], files, buckets, 0, function(files) {
@@ -86,6 +97,8 @@ function getAllDrawableFileData(urls, files, index, callback) {
     }
   });
 }
+
+// TODO fix horrible recursive callbacks
 
 function getDrawableFileData(url, files, buckets, index, callback) {
     var a = url.split('/');
@@ -104,12 +117,14 @@ function getDrawableFileData(url, files, buckets, index, callback) {
             // get xml references
             var urls = [];
       		var ids = findDrawableRefs(file.data);
-            resolve(url, ids, urls, 0, function(urls) {
-              getAllDrawableFileData(urls, files, 0, function(refedFiles) {
-                files = files.concat(refedFiles);
-                if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
-              }); 
-            });
+            
+              resolve(url, ids, urls, 0, function(urls) {
+                getAllDrawableFileData(urls, files, 0, function(refedFiles) {
+                  files = files.concat(refedFiles);
+                  if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
+                }); 
+              });
+            
          } else {
            if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
          }
@@ -149,8 +164,14 @@ function getRawGitHubData(url, callback) {
   xhr.send();
 }
 
+// TODO fix horrible recursive callbacks
 
 function resolve(url, ids, results, index, callback) {
+
+  if (ids.length == 0) {
+    callback(results);
+    return;
+  }
 
   var resPath = 'drawable/' + ids[index].split('/')[1];
   var urlBase = url.slice(0, url.lastIndexOf('/res')+5);
@@ -189,10 +210,14 @@ var _DRAWABLE_ID_REGEX = "@((android:)?(drawable)/([A-Za-z0-9_:\.\/])*)";
 function findDrawableRefs(body) {
   var patt=new RegExp(_DRAWABLE_ID_REGEX,'g');
   var results = body.match(patt);
-  var uniqueArray = results.filter(function(elem, pos) {
-    return results.indexOf(elem) == pos;
-  });
-  return uniqueArray;
+  if (results) {
+  	var uniqueArray = results.filter(function(elem, pos) {
+      return results.indexOf(elem) == pos;
+  	});
+    return uniqueArray;
+  } else {
+    return [];
+  }
 }
 
 function removePlatformResourcePrefix(text) {
