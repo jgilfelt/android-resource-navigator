@@ -12,25 +12,25 @@ Features
 
 Android XML resources viewed on GitHub are processed so that any contained resource identifiers will link directly to the appropriate external file or specific declaration line where appropriate.
 
-![feature-linkify](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-linkify.png "feature-linkify")
+<img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-linkify.png"/>
 
 ### Framework styles browser action
 
 Quickly open the Android framework styles or themes XML via an always available browser action button.
 
-![feature-browser-action](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-browser-action.png "feature-browser-action")
+<img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-browser-action.png"/>
 
 ### Framework styles search omnibox
 
 Type 'arn ' followed by a search term into the address bar to find a particular Android framework style or theme. Use the suggestions to navigate directly to the appropriate XML resource definition.
 
-![feature-omnibox](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-omnibox.png "feature-omnibox")
+<img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-omnibox.png"/>
 
 ### Download drawable context item
 
 Right-click on the page for any drawable resource and select 'Download Drawable' to download a .ZIP file archive conatining the file assets at all pixel densities. For XML resources, the download archive will contain ALL dependent file assets at all pixel densities and include the XML.
 
-![feature-download-drawable](https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-download-drawable.png "feature-download-drawable")
+<img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-download-drawable.png"/>
 
 Caveats
 -------
