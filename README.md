@@ -28,7 +28,7 @@ Type 'arn ' followed by a search term into the address bar to find a particular 
 
 ### Download drawable context item
 
-Right-click on the page for any drawable resource and select 'Download Drawable' to download a .ZIP file archive conatining the file assets at all pixel densities. For XML resources, the download archive will contain ALL dependent file assets at all pixel densities and include the XML.
+Right-click on the page for any drawable resource and select 'Download Drawable' to download a .ZIP file archive conatining the file assets at all pixel densities. For XML resources, the download archive will contain ALL dependent file assets at all pixel densities including the XML.
 
 <img src="https://raw.github.com/jgilfelt/android-resource-navigator/master/screenshots/feature-download-drawable.png"/>
 
