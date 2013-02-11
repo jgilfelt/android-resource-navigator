@@ -3,7 +3,7 @@
   "name": "Android Resource Navigator",
   "description": "Enhanced resource navigation for GitHub hosted Android projects",
   "homepage_url": "http://jgilfelt.github.com/android-resource-navigator",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "background": { "scripts": ["background.js", "downloader.js", "jszip/jszip.js" ] },
   "options_page": "options.html",
   "permissions": [
