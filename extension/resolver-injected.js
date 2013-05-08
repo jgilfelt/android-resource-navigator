@@ -98,7 +98,7 @@ function arn_getValuesMap(project) {
   return _ARN_VALUES_MAP;
 }
 
-function arn_checkTarget(targetUrl, functionOk, functionFail) {
+function arn_checkTarget_z(targetUrl, functionOk, functionFail) {
   $.ajax({
     url: targetUrl,
     statusCode: {
@@ -108,4 +108,20 @@ function arn_checkTarget(targetUrl, functionOk, functionFail) {
 //  }).done(function() {
 //    alert("done");
   });
+}
+
+
+function arn_checkTarget(targetUrl, functionOk, functionFail) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", targetUrl, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status==200) {
+        functionOk();
+      } else {
+        functionFail();
+      }
+    }
+  }
+  xhr.send();
 }

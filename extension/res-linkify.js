@@ -74,12 +74,32 @@ function linkify() {
 
   // linkify the resource items
   for(var i = 0; node=nodes[i] ; i++) {
-    node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, "<a href='javascript:arn_resolve(\"$1\")'>@$1</a>");
+//    node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, "<a href='javascript:arn_resolve(\"$1\")'>@$1</a>");
+    var id = node.parentNode.textContent.match(re)[1];    
+    node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, "<a style='cursor: pointer;' id='ar" + i + "'>@$1</a>");
+    
+    var elem = document.getElementById('ar' + i);
+    elem.param = id;
+    elem.addEventListener("click", function() {
+      //console.debug(this.param);
+      arn_resolve(this.param);
+    });
+    
   }
 
   // linkify the style parents
   for(var i = 0; node2=nodesStyleParent[i] ; i++) {
-    node2.parentNode.innerHTML = node2.parentNode.innerHTML.replace(re2, "<a href='javascript:arn_resolve(\"style/$1\")'>\"$1\"</a>");
+//    node2.parentNode.innerHTML = node2.parentNode.innerHTML.replace(re2, "<a href='javascript:arn_resolve(\"style/$1\")'>\"$1\"</a>");    
+    var id = "style/" + node2.parentNode.textContent.match(re2)[1];
+    node2.parentNode.innerHTML = node2.parentNode.innerHTML.replace(re2, "<a style='cursor: pointer;' id='as" + i + "'>\"$1\"</a>");
+    
+    var elem = document.getElementById('as' + i);
+    elem.param = id;
+    elem.addEventListener("click", function() {
+      //console.debug(this.param);
+      arn_resolve(this.param);
+    });
+    
   }
 
   // broadcast drawables to extension background
@@ -89,31 +109,34 @@ function linkify() {
   document.getElementById('slider').addEventListener("DOMSubtreeModified", fireLinkify, false);
 }
 
+var _ARN_VALUES_OVERRIDES;
+
 function injectJS() {
   // inject our js
-  var s = document.createElement('script');
-  s.src = chrome.extension.getURL("resolver-injected.js");
+  //var s = document.createElement('script');
+  //s.src = chrome.extension.getURL("resolver-injected.js");
   var s2 = document.createElement('script');
   s2.src = chrome.extension.getURL("page-find-injected.js");
 
   chrome.storage.sync.get('values_override', function(items) {
-    var js;
+    //var js;
     if (items.values_override) {
       var val = items.values_override;
       //alert(val);
-      js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(val) + ';';
+      //js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(val) + ';';
+      _ARN_VALUES_OVERRIDES = val;
     } else {
-      js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(_DEFAULT_VALUES) + ';';
+      //js = 'var _ARN_VALUES_OVERRIDES = ' + JSON.stringify(_DEFAULT_VALUES) + ';';
+      _ARN_VALUES_OVERRIDES = _DEFAULT_VALUES;
     }
+    
+    //var s3 = document.createElement('script');
+    //s3.innerText = js;
+    //(document.head||document.documentElement).appendChild(s3);
 
-    var s3 = document.createElement('script');
-    s3.innerText = js;
-    (document.head||document.documentElement).appendChild(s3);
-    //s3.parentNode.removeChild(s3);
-
-    (document.head||document.documentElement).appendChild(s);
+    //(document.head||document.documentElement).appendChild(s);
     (document.head||document.documentElement).appendChild(s2);
-    s.parentNode.removeChild(s);
+    //s.parentNode.removeChild(s);
     s2.parentNode.removeChild(s2);
 
   });
