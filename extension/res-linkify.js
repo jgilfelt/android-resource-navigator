@@ -20,7 +20,7 @@ var _STYLE_PARENT_REGEX = '"([^@].*)"';
 function linkify() {
   
   // remove dom listener
-  document.getElementById('slider').removeEventListener("DOMSubtreeModified", fireLinkify, false);
+  document.getElementById('js-repo-pjax-container').removeEventListener("DOMSubtreeModified", fireLinkify, false);
 
   // find the resource identifiers
   var re = new RegExp();
@@ -106,7 +106,7 @@ function linkify() {
   //chrome.extension.sendMessage({refs : drawableRefs}, function(response) {}); 
   
   // add dom listener
-  document.getElementById('slider').addEventListener("DOMSubtreeModified", fireLinkify, false);
+  document.getElementById('js-repo-pjax-container').addEventListener("DOMSubtreeModified", fireLinkify, false);
 }
 
 var _ARN_VALUES_OVERRIDES;
