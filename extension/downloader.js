@@ -21,15 +21,15 @@ var notification;
 
 var downloadHandler = function(info, tab) {
   
-  //notification = webkitNotifications.createNotification(
-  //  'images/logo-38.png',
-  //  'Downloading Drawable',
-  //  'This might take a few seconds...'
-  //);
-
-  notification = webkitNotifications.createHTMLNotification(
-    'download_notification.html'
+  notification = webkitNotifications.createNotification(
+    'images/logo-38.png',
+    'Downloading Drawable',
+    'This might take a few seconds...'
   );
+
+  //notification = webkitNotifications.createHTMLNotification(
+  //  'download_notification.html'
+  //);
 
   notification.show();
 
