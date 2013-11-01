@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi' ];
+var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi', 'drawable-xxhdpi' ];
 var XML_DRAWABLE_BUCKETS = [ 'drawable' ];
 
 var notification;
