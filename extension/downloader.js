@@ -16,39 +16,41 @@
 
 var BITMAP_DRAWABLE_BUCKETS = [ 'drawable-ldpi', 'drawable-mdpi', 'drawable-hdpi', 'drawable-xhdpi', 'drawable-xxhdpi' ];
 var XML_DRAWABLE_BUCKETS = [ 'drawable' ];
-
+var NOTIFICATION_ID = "THX1138";
 var notification;
+var notificationId;
 
 var downloadHandler = function(info, tab) {
-  
-  notification = webkitNotifications.createNotification(
-    'images/logo-38.png',
-    'Downloading Drawable',
-    'This might take a few seconds...'
-  );
 
-  //notification = webkitNotifications.createHTMLNotification(
-  //  'download_notification.html'
-  //);
+  try {
 
-  notification.show();
+    var opt = {
+      type: "basic",
+      title: "Downloading Drawable",
+      message: "This might take a few seconds...",
+      iconUrl: "images/logo-38.png"
+    }
+
+    chrome.notifications.create(NOTIFICATION_ID, opt, function(id) {});
+
+  } catch (err) {}
 
   window.URL = window.URL || window.webkitURL || window.mozURL;
   window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
                        window.MozBlobBuilder;
-  
+
   var urls = [];
   var files = [];
-  
+
   var isBinary = (info.pageUrl.indexOf('.png') > 0);
-    
+
   if (isBinary) {
     getDrawableFileData(info.pageUrl, files, BITMAP_DRAWABLE_BUCKETS, 0, doZip);
   } else {
     urls.push(info.pageUrl);
-    getAllDrawableFileData(urls, files, 0, doZip); 
+    getAllDrawableFileData(urls, files, 0, doZip);
   }
-  
+
   // trying to set a filename with HTML5 a.download but don't like side effects
 
   //navigateToUrl("data:application/zip;base64,"+content);
@@ -80,12 +82,14 @@ function doZip(files) {
     var content = zip.generate();
     var zipUrl = window.URL.createObjectURL(base64ToBlob_(content,'application/zip'));
     navigateToUrl(zipUrl);
-    notification.cancel();
+    try {
+      chrome.notifications.clear(NOTIFICATION_ID, function(wasCleared) {});
+    } catch (err) {}
   }
 }
 
 function getAllDrawableFileData(urls, files, index, callback) {
-  
+
   if (urls.length == 0) {
     callback;
     return;
@@ -116,19 +120,19 @@ function getDrawableFileData(url, files, buckets, index, callback) {
          file.data = data;
          file.isBinary = isBinary;
          files.push(file);
-         
+
          if (!isBinary) {
             // get xml references
             var urls = [];
       		var ids = findDrawableRefs(file.data);
-            
+
               resolve(url, ids, urls, 0, function(urls) {
                 getAllDrawableFileData(urls, files, 0, function(refedFiles) {
                   files = files.concat(refedFiles);
                   if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
-                }); 
+                });
               });
-            
+
          } else {
            if (index < buckets.length-1) { getDrawableFileData(url, files, buckets, index+1, callback); } else { callback(files); }
          }
@@ -139,7 +143,7 @@ function getDrawableFileData(url, files, buckets, index, callback) {
 }
 
 function getRawGitHubData(url, callback) {
-  var rawUrl = url.replace('github.com', 'raw.github.com').replace('blob/', '');
+  var rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('blob/', '');
   var a = rawUrl.split('/');
   var folder = a[a.length-2];
   var filename = a[a.length-1];
@@ -162,7 +166,7 @@ function getRawGitHubData(url, callback) {
         }
       } else {
          callback(folder, filename, null, isBinary);
-      }   
+      }
     }
   }
   xhr.send();
@@ -184,7 +188,7 @@ function resolve(url, ids, results, index, callback) {
   var pathHdpi = resPath.replace('drawable', 'drawable-hdpi');
   var nineUrl = urlBase + pathHdpi + ".9.png";
   var pngUrl = urlBase + pathHdpi + ".png";
-  
+
   // try 9 patch
   checkTarget(nineUrl,
     function() {
@@ -206,7 +210,7 @@ function resolve(url, ids, results, index, callback) {
       );
     }
   );
-  
+
 }
 
 var _DRAWABLE_ID_REGEX = "@((android:)?(drawable)/([A-Za-z0-9_:\.\/])*)";

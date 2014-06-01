@@ -16,8 +16,8 @@
 
 var OMNIBOX_MAX_RESULTS = 20;
 
-var REF_STYLES_XML_URL_RAW = 'https://raw.github.com/android/platform_frameworks_base/master/core/res/res/values/styles.xml';
-var REF_THEMES_XML_URL_RAW = 'https://raw.github.com/android/platform_frameworks_base/master/core/res/res/values/themes.xml';
+var REF_STYLES_XML_URL_RAW = 'https://raw.githubusercontent.com/android/platform_frameworks_base/master/core/res/res/values/styles.xml';
+var REF_THEMES_XML_URL_RAW = 'https://raw.githubusercontent.com/android/platform_frameworks_base/master/core/res/res/values/themes.xml';
 
 var REF_STYLES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/styles.xml';
 var REF_THEMES_XML_URL = 'https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/themes.xml';
@@ -118,7 +118,7 @@ function onScriptsLoaded() {
     function(query, suggestFn) {
       if (!query)
         return;
-  
+
       suggestFn = suggestFn || function(){};
       query = query.replace(/(^ +)|( +$)/g, '')
                    .replace(/\</g, '&lt;')
